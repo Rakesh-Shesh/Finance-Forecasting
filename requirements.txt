@@ -12,3 +12,4 @@ autogluon.timeseries
 numpy
 prophet
 scikit-learn
+seaborn
