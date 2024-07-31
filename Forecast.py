@@ -51,67 +51,70 @@ def parse_month_column(data):
 
 
 def home_page():
-    # Path to your Excel file
-    excel_file = r"C:\Users\Admin\Desktop\Airlines Application\Data\Snapshot_1.xlsx"
-
-    # Read the Excel file to get the sheet names
-    sheet_names = pd.ExcelFile(excel_file).sheet_names
-
     # Streamlit application
     st.title('Cost Breakdown Analysis')
 
-    # Dropdown to select sheet
-    selected_sheet = st.selectbox('Select Sheet:', sheet_names)
+    # File uploader to upload Excel file
+    uploaded_file = st.file_uploader("Upload your Excel file", type=["xlsx"])
 
-    # Read the data from the selected sheet
-    df = pd.read_excel(excel_file, sheet_name=selected_sheet)
+    if uploaded_file is not None:
+        # Read the Excel file to get the sheet names
+        sheet_names = pd.ExcelFile(uploaded_file).sheet_names
 
-    # Remove any commas from numeric values and convert to integers
-    df = df.replace({',': ''}, regex=True)
-    df.iloc[:, 1:] = df.iloc[:, 1:].apply(pd.to_numeric)
+        # Dropdown to select sheet
+        selected_sheet = st.selectbox('Select Sheet:', sheet_names)
 
-    # List of months
-    months = df.columns[1:]
+        # Read the data from the selected sheet
+        df = pd.read_excel(uploaded_file, sheet_name=selected_sheet)
 
-    # Melt the dataframe for easier plotting
-    df_melted = df.melt(id_vars=['Category'], value_vars=months, var_name='Month', value_name='Cost')
+        # Remove any commas from numeric values and convert to integers
+        df = df.replace({',': ''}, regex=True)
+        df.iloc[:, 1:] = df.iloc[:, 1:].apply(pd.to_numeric)
 
-    # Pie Chart
-    st.header('Pie Chart')
-    selected_month_pie = st.selectbox('Select Month for Pie Chart:', months)
-    filtered_df_pie = df[['Category', selected_month_pie]].rename(columns={selected_month_pie: 'Cost'})
-    fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost',
-                     title=f'Cost Breakdown for {selected_month_pie}')
-    st.plotly_chart(fig_pie)
+        # List of months
+        months = df.columns[1:]
 
-    # Bar Chart
-    st.header('Bar Chart')
-    selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1)
-    filtered_df_bar = df[['Category', selected_month_bar]].rename(columns={selected_month_bar: 'Cost'})
-    fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost',
-                     title=f'Cost Breakdown for {selected_month_bar}',
-                     labels={'Category': 'Category', 'Cost': 'Cost'})
-    st.plotly_chart(fig_bar)
+        # Melt the dataframe for easier plotting
+        df_melted = df.melt(id_vars=['Category'], value_vars=months, var_name='Month', value_name='Cost')
 
-    # Stacked Column Chart
-    st.header('Stacked Column Chart')
-    fig_stacked = go.Figure()
-    for category in df['Category']:
-        fig_stacked.add_trace(go.Bar(
-            x=months,
-            y=df[df['Category'] == category].iloc[0, 1:],
-            name=category
-        ))
+        # Pie Chart
+        st.header('Pie Chart')
+        selected_month_pie = st.selectbox('Select Month for Pie Chart:', months)
+        filtered_df_pie = df[['Category', selected_month_pie]].rename(columns={selected_month_pie: 'Cost'})
+        fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost',
+                         title=f'Cost Breakdown for {selected_month_pie}')
+        st.plotly_chart(fig_pie)
 
-    fig_stacked.update_layout(
-        barmode='stack',
-        title='Monthly Cost Breakdown',
-        xaxis_title='Month',
-        yaxis_title='Cost'
-    )
-    st.plotly_chart(fig_stacked)
+        # Bar Chart
+        st.header('Bar Chart')
+        selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1)
+        filtered_df_bar = df[['Category', selected_month_bar]].rename(columns={selected_month_bar: 'Cost'})
+        fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost',
+                         title=f'Cost Breakdown for {selected_month_bar}',
+                         labels={'Category': 'Category', 'Cost': 'Cost'})
+        st.plotly_chart(fig_bar)
 
+        # Stacked Column Chart
+        st.header('Stacked Column Chart')
+        fig_stacked = go.Figure()
+        for category in df['Category']:
+            fig_stacked.add_trace(go.Bar(
+                x=months,
+                y=df[df['Category'] == category].iloc[0, 1:],
+                name=category
+            ))
 
+        fig_stacked.update_layout(
+            barmode='stack',
+            title='Monthly Cost Breakdown',
+            xaxis_title='Month',
+            yaxis_title='Cost'
+        )
+        st.plotly_chart(fig_stacked)
+
+if __name__ == '__main__':
+    home_page()
+    
 def descriptive_statistics_page():
     # Function to preprocess the data
     def preprocess_data(df):
