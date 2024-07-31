@@ -57,7 +57,7 @@ def home_page():
     st.title('Cost Breakdown Analysis')
 
     # File uploader to upload Excel file
-    uploaded_file = st.file_uploader("Upload your Excel file", type=["xlsx"], key="file_uploader_2")
+     uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"])
 
     if uploaded_file is not None:
         # Read the Excel file to get the sheet names
