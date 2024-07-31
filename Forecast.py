@@ -573,7 +573,7 @@ def Simulation_Page():
     if uploaded_inflow is not None and uploaded_outflow is not None:
         # Load data
         inflow_df = load_data(uploaded_inflow)
-        outflow_df = load_data(uploaded_outflow8
+        outflow_df = load_data(uploaded_outflow)
 
         st.header("Inflow Data (Head)",divider='orange')
         st.dataframe(inflow_df.head())
