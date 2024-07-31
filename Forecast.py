@@ -61,7 +61,7 @@ def home_page():
 
     if uploaded_file is not None:
         # Read the Excel file to get the sheet names
-        sheet_names = pd.ExcelFile(uploaded_file_1).sheet_names
+        sheet_names = pd.ExcelFile(uploaded_file).sheet_names
 
         # Dropdown to select sheet
         selected_sheet = st.selectbox('Select Sheet:', sheet_names, key="sheet_selectbox")
