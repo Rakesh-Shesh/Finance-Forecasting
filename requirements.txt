@@ -3,8 +3,9 @@ streamlit
 pandas
 plotly
 autogluon.timeseries
-numpy==1.23.5
-scipy==1.9.3
+numpy==1.25.0
+scipy==1.11.1
 prophet
 scikit-learn
-seaborn
+seaborn==0.12.2
+
