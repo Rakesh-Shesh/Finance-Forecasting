@@ -30,7 +30,10 @@ import pandas as pd
 import numpy as np
 from prophet import Prophet
 from sklearn.metrics import mean_absolute_percentage_error
-
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
 def load_data(file, sheet_name):
     df = pd.read_excel(file, sheet_name=sheet_name)
@@ -49,69 +52,69 @@ def parse_month_column(data):
     data['Month'] = pd.to_datetime(data['Month'], format='%Y-%m-%d')
     return data
 
-
 def home_page():
-    # Path to your Excel file
-    excel_file = r"C:\Users\Admin\Desktop\Airlines Application\Data\Snapshot_1.xlsx"
-
-    # Read the Excel file to get the sheet names
-    sheet_names = pd.ExcelFile(excel_file).sheet_names
-
-    # Streamlit application
     st.title('Cost Breakdown Analysis')
 
-    # Dropdown to select sheet
-    selected_sheet = st.selectbox('Select Sheet:', sheet_names)
+    # File uploader to upload Excel file
+    uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"], key="file_uploader_1")
 
-    # Read the data from the selected sheet
-    df = pd.read_excel(excel_file, sheet_name=selected_sheet)
+    if uploaded_file is not None:
+        # Read the Excel file to get the sheet names
+        sheet_names = pd.ExcelFile(uploaded_file).sheet_names
 
-    # Remove any commas from numeric values and convert to integers
-    df = df.replace({',': ''}, regex=True)
-    df.iloc[:, 1:] = df.iloc[:, 1:].apply(pd.to_numeric)
+        # Dropdown to select sheet
+        selected_sheet = st.selectbox('Select Sheet:', sheet_names, key="sheet_selectbox_1")
 
-    # List of months
-    months = df.columns[1:]
+        # Read the data from the selected sheet
+        df = pd.read_excel(uploaded_file, sheet_name=selected_sheet)
 
-    # Melt the dataframe for easier plotting
-    df_melted = df.melt(id_vars=['Category'], value_vars=months, var_name='Month', value_name='Cost')
+        # Remove any commas from numeric values and convert to integers
+        df = df.replace({',': ''}, regex=True)
+        df.iloc[:, 1:] = df.iloc[:, 1:].apply(pd.to_numeric)
 
-    # Pie Chart
-    st.header('Pie Chart')
-    selected_month_pie = st.selectbox('Select Month for Pie Chart:', months)
-    filtered_df_pie = df[['Category', selected_month_pie]].rename(columns={selected_month_pie: 'Cost'})
-    fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost',
-                     title=f'Cost Breakdown for {selected_month_pie}')
-    st.plotly_chart(fig_pie)
+        # List of months
+        months = df.columns[1:]
 
-    # Bar Chart
-    st.header('Bar Chart')
-    selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1)
-    filtered_df_bar = df[['Category', selected_month_bar]].rename(columns={selected_month_bar: 'Cost'})
-    fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost',
-                     title=f'Cost Breakdown for {selected_month_bar}',
-                     labels={'Category': 'Category', 'Cost': 'Cost'})
-    st.plotly_chart(fig_bar)
+        # Melt the dataframe for easier plotting
+        df_melted = df.melt(id_vars=['Category'], value_vars=months, var_name='Month', value_name='Cost')
 
-    # Stacked Column Chart
-    st.header('Stacked Column Chart')
-    fig_stacked = go.Figure()
-    for category in df['Category']:
-        fig_stacked.add_trace(go.Bar(
-            x=months,
-            y=df[df['Category'] == category].iloc[0, 1:],
-            name=category
-        ))
+        # Pie Chart
+        st.header('Pie Chart')
+        selected_month_pie = st.selectbox('Select Month for Pie Chart:', months, key="pie_month_selectbox_1")
+        filtered_df_pie = df[['Category', selected_month_pie]].rename(columns={selected_month_pie: 'Cost'})
+        fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost',
+                         title=f'Cost Breakdown for {selected_month_pie}')
+        st.plotly_chart(fig_pie)
 
-    fig_stacked.update_layout(
-        barmode='stack',
-        title='Monthly Cost Breakdown',
-        xaxis_title='Month',
-        yaxis_title='Cost'
-    )
-    st.plotly_chart(fig_stacked)
+        # Bar Chart
+        st.header('Bar Chart')
+        selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1, key="bar_month_selectbox_1")
+        filtered_df_bar = df[['Category', selected_month_bar]].rename(columns={selected_month_bar: 'Cost'})
+        fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost',
+                         title=f'Cost Breakdown for {selected_month_bar}',
+                         labels={'Category': 'Category', 'Cost': 'Cost'})
+        st.plotly_chart(fig_bar)
 
+        # Stacked Column Chart
+        st.header('Stacked Column Chart')
+        fig_stacked = go.Figure()
+        for category in df['Category']:
+            fig_stacked.add_trace(go.Bar(
+                x=months,
+                y=df[df['Category'] == category].iloc[0, 1:],
+                name=category
+            ))
 
+        fig_stacked.update_layout(
+            barmode='stack',
+            title='Monthly Cost Breakdown',
+            xaxis_title='Month',
+            yaxis_title='Cost'
+        )
+        st.plotly_chart(fig_stacked)
+
+if __name__ == '__main__':
+    home_page()
 def descriptive_statistics_page():
     # Function to preprocess the data
     def preprocess_data(df):
@@ -188,7 +191,7 @@ def descriptive_statistics_page():
     st.write("Upload your dataset in Excel or CSV format.")
 
     # File upload
-    uploaded_file = st.file_uploader("Choose a file", type=["xlsx", "csv"])
+    uploaded_file = st.file_uploader("Choose a file", type=["xlsx", "csv"],key="file_uploader_2")
 
     if uploaded_file is not None:
         if uploaded_file.name.endswith('.xlsx'):
@@ -268,7 +271,7 @@ def descriptive_statistics_page():
         st.title("Descriptive Statistics")
 
         # File uploader
-        uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
+        uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx",key="file_uploader_3")
         if uploaded_file is not None:
             # Year selection
             year = st.selectbox("Select Year", ["2022", "2023"])
@@ -333,7 +336,7 @@ def Trend_Insights_page():
     st.title("Excel File Analytics with Line Chart")
 
     # Upload the Excel file
-    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
+    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"],key="file_uploader_4")
 
     if uploaded_file:
         # Load the Excel file
@@ -395,7 +398,7 @@ page = st.sidebar.radio("Select a page",
 def correlation_page():
     st.title("Correlation Matrix - Cashflow Prediction")
 
-    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx", "xls"])
+    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx", "xls"],key="file_uploader_5")
 
     if uploaded_file is not None:
         try:
@@ -453,7 +456,7 @@ def ml_algorithms_page():
     st.title('G10X Forecasting Engine')
 
     # File uploader for CSV or Excel
-    uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"])
+    uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"],key="file_uploader_6")
 
     if uploaded_file is not None:
         # Determine file type and load data
@@ -564,8 +567,8 @@ def Simulation_Page():
     st.title("Cashflow Simulation (2024)")
 
     st.write("Upload Inflow and Outflow files (CSV or Excel) for 2022 and 2023.")
-    uploaded_inflow = st.file_uploader("Upload Inflow File", type=["csv", "xlsx", "xls"])
-    uploaded_outflow = st.file_uploader("Upload Outflow File", type=["csv", "xlsx", "xls"])
+    uploaded_inflow = st.file_uploader("Upload Inflow File", type=["csv", "xlsx", "xls"],key="file_uploader_7")
+    uploaded_outflow = st.file_uploader("Upload Outflow File", type=["csv", "xlsx", "xls"],key="file_uploader_8")
 
     if uploaded_inflow is not None and uploaded_outflow is not None:
         # Load data
