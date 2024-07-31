@@ -1,0 +1,14 @@
+openpyxl
+streamlit
+seaborn
+plotly
+scikit-learn
+xgboost
+matplotlib
+streamlit
+pandas
+plotly
+autogluon.timeseries
+numpy
+prophet
+scikit-learn
