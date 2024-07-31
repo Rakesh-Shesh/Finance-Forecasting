@@ -191,7 +191,7 @@ def descriptive_statistics_page():
     st.write("Upload your dataset in Excel or CSV format.")
 
     # File upload
-    uploaded_file = st.file_uploader("Choose a file", type=["xlsx", "csv"])
+    uploaded_file = st.file_uploader("Choose a file", type=["xlsx", "csv"],key="file_uploader_2")
 
     if uploaded_file is not None:
         if uploaded_file.name.endswith('.xlsx'):
@@ -271,7 +271,7 @@ def descriptive_statistics_page():
         st.title("Descriptive Statistics")
 
         # File uploader
-        uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
+        uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx",key="file_uploader_3")
         if uploaded_file is not None:
             # Year selection
             year = st.selectbox("Select Year", ["2022", "2023"])
@@ -336,7 +336,7 @@ def Trend_Insights_page():
     st.title("Excel File Analytics with Line Chart")
 
     # Upload the Excel file
-    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
+    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"],key="file_uploader_4")
 
     if uploaded_file:
         # Load the Excel file
@@ -398,7 +398,7 @@ page = st.sidebar.radio("Select a page",
 def correlation_page():
     st.title("Correlation Matrix - Cashflow Prediction")
 
-    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx", "xls"])
+    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx", "xls"],key="file_uploader_5")
 
     if uploaded_file is not None:
         try:
@@ -456,7 +456,7 @@ def ml_algorithms_page():
     st.title('G10X Forecasting Engine')
 
     # File uploader for CSV or Excel
-    uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"])
+    uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"],key="file_uploader_6")
 
     if uploaded_file is not None:
         # Determine file type and load data
@@ -567,13 +567,13 @@ def Simulation_Page():
     st.title("Cashflow Simulation (2024)")
 
     st.write("Upload Inflow and Outflow files (CSV or Excel) for 2022 and 2023.")
-    uploaded_inflow = st.file_uploader("Upload Inflow File", type=["csv", "xlsx", "xls"])
-    uploaded_outflow = st.file_uploader("Upload Outflow File", type=["csv", "xlsx", "xls"])
+    uploaded_inflow = st.file_uploader("Upload Inflow File", type=["csv", "xlsx", "xls"],key="file_uploader_7")
+    uploaded_outflow = st.file_uploader("Upload Outflow File", type=["csv", "xlsx", "xls"],key="file_uploader_8")
 
     if uploaded_inflow is not None and uploaded_outflow is not None:
         # Load data
         inflow_df = load_data(uploaded_inflow)
-        outflow_df = load_data(uploaded_outflow)
+        outflow_df = load_data(uploaded_outflow8
 
         st.header("Inflow Data (Head)",divider='orange')
         st.dataframe(inflow_df.head())
