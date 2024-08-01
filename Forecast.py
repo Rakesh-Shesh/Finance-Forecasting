@@ -42,7 +42,10 @@ import uuid
 
 # Function to generate unique widget keys
 def generate_widget_key(base_key):
-    return f"{base_key}_{st.session_state.get(base_key, 0)}"
+    if base_key not in st.session_state:
+        st.session_state[base_key] = 0
+    st.session_state[base_key] += 1
+    return f"{base_key}_{st.session_state[base_key]}"
 
 def home_page():
     st.title('Cost Breakdown Analysis')
