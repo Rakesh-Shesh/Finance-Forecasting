@@ -40,94 +40,68 @@ import logging
 import uuid
 
 
-# Function to generate unique widget keys
-def generate_widget_key(base_key):
-    if base_key not in st.session_state:
-        st.session_state[base_key] = 0
-    st.session_state[base_key] += 1
-    return f"{base_key}_{st.session_state[base_key]}"
-
 def home_page():
+    # URL to your Excel file on GitHub
+    excel_file_url = "https://raw.githubusercontent.com/Rakesh-Shesh/Finance-Forecasting/main/Snapshot_1.xlsx"
+
+    # Read the Excel file to get the sheet names
+    sheet_names = pd.ExcelFile(excel_file_url).sheet_names
+
+    # Streamlit application
     st.title('Cost Breakdown Analysis')
 
-    # File uploader to upload CSV or Excel file
-    uploaded_file_key = generate_widget_key("home_file_uploader")
-    uploaded_file_K1 = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"], key=uploaded_file_key)
+    # Dropdown to select sheet
+    selected_sheet = st.selectbox('Select Sheet:', sheet_names)
 
-    if uploaded_file_K1 is not None:
-        # Read the Excel file to get the sheet names if it's an Excel file
-        if uploaded_file_K1.name.endswith('.xlsx'):
-            sheet_names = pd.ExcelFile(uploaded_file_K1).sheet_names
-            # Dropdown to select sheet
-            sheet_selectbox_key = generate_widget_key("sheet_selectbox")
-            selected_sheet = st.selectbox('Select Sheet:', sheet_names, key=sheet_selectbox_key)
-            df = pd.read_excel(uploaded_file_K1, sheet_name=selected_sheet)
-        else:
-            df = pd.read_csv(uploaded_file_K1)
-        
-        # Remove any commas from numeric values and convert to integers
-        df = df.replace({',': ''}, regex=True)
-        df.iloc[:, 1:] = df.iloc[:, 1:].apply(pd.to_numeric)
+    # Read the data from the selected sheet
+    df = pd.read_excel(excel_file_url, sheet_name=selected_sheet)
 
-        # List of months
-        months = df.columns[1:]
+    # Remove any commas from numeric values and convert to integers
+    df = df.replace({',': ''}, regex=True)
+    df.iloc[:, 1:] = df.iloc[:, 1:].apply(pd.to_numeric)
 
-        # Melt the dataframe for easier plotting
-        df_melted = df.melt(id_vars=['Category'], value_vars=months, var_name='Month', value_name='Cost')
+    # List of months
+    months = df.columns[1:]
 
-        # Display Data Table
-        st.header('Data Table')
-        st.dataframe(df)
+    # Melt the dataframe for easier plotting
+    df_melted = df.melt(id_vars=['Category'], value_vars=months, var_name='Month', value_name='Cost')
 
-        # Pie Chart
-        st.header('Pie Chart')
-        pie_month_selectbox_key = generate_widget_key("pie_month_selectbox")
-        selected_month_pie = st.selectbox('Select Month for Pie Chart:', months, key=pie_month_selectbox_key)
-        filtered_df_pie = df[['Category', selected_month_pie]].rename(columns={selected_month_pie: 'Cost'})
-        fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost',
-                         title=f'Cost Breakdown for {selected_month_pie}')
-        st.plotly_chart(fig_pie)
+    # Pie Chart
+    st.header('Pie Chart')
+    selected_month_pie = st.selectbox('Select Month for Pie Chart:', months)
+    filtered_df_pie = df[['Category', selected_month_pie]].rename(columns={selected_month_pie: 'Cost'})
+    fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost',
+                     title=f'Cost Breakdown for {selected_month_pie}')
+    st.plotly_chart(fig_pie)
 
-        # Bar Chart
-        st.header('Bar Chart')
-        bar_month_selectbox_key = generate_widget_key("bar_month_selectbox")
-        selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1, key=bar_month_selectbox_key)
-        filtered_df_bar = df[['Category', selected_month_bar]].rename(columns={selected_month_bar: 'Cost'})
-        fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost',
-                         title=f'Cost Breakdown for {selected_month_bar}',
-                         labels={'Category': 'Category', 'Cost': 'Cost'})
-        st.plotly_chart(fig_bar)
+    # Bar Chart
+    st.header('Bar Chart')
+    selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1)
+    filtered_df_bar = df[['Category', selected_month_bar]].rename(columns={selected_month_bar: 'Cost'})
+    fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost',
+                     title=f'Cost Breakdown for {selected_month_bar}',
+                     labels={'Category': 'Category', 'Cost': 'Cost'})
+    st.plotly_chart(fig_bar)
 
-        # Stacked Column Chart
-        st.header('Stacked Column Chart')
-        fig_stacked = go.Figure()
-        for category in df['Category']:
-            fig_stacked.add_trace(go.Bar(
-                x=months,
-                y=df[df['Category'] == category].iloc[0, 1:],
-                name=category
-            ))
+    # Stacked Column Chart
+    st.header('Stacked Column Chart')
+    fig_stacked = go.Figure()
+    for category in df['Category']:
+        fig_stacked.add_trace(go.Bar(
+            x=months,
+            y=df[df['Category'] == category].iloc[0, 1:],
+            name=category
+        ))
 
-        fig_stacked.update_layout(
-            barmode='stack',
-            title='Monthly Cost Breakdown',
-            xaxis_title='Month',
-            yaxis_title='Cost'
-        )
-        st.plotly_chart(fig_stacked)
+    fig_stacked.update_layout(
+        barmode='stack',
+        title='Monthly Cost Breakdown',
+        xaxis_title='Month',
+        yaxis_title='Cost'
+    )
+    st.plotly_chart(fig_stacked)
 
-        # Download Filtered Data
-        st.header('Download Filtered Data')
-        download_month_selectbox_key = generate_widget_key("download_month_selectbox")
-        selected_month_download = st.selectbox('Select Month for Download:', months, key=download_month_selectbox_key)
-        filtered_df_download = df[['Category', selected_month_download]].rename(columns={selected_month_download: 'Cost'})
-        
-        # Convert DataFrame to CSV
-        csv = filtered_df_download.to_csv(index=False)
-        b64 = base64.b64encode(csv.encode()).decode()  # B64 encoding
-        href = f'<a href="data:file/csv;base64,{b64}" download="filtered_data.csv">Download CSV File</a>'
-        st.markdown(href, unsafe_allow_html=True)
-
+# Run the Streamlit app
 if __name__ == '__main__':
     home_page()
 def descriptive_statistics_page():
