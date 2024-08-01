@@ -39,10 +39,13 @@ import logging
 import logging
 import uuid
 
-# Configure logging
+
+# Initialize logging
 logging.basicConfig(level=logging.INFO)
+
+# Function to generate unique keys
 def generate_unique_key(base_key):
-    """Generate a unique key by appending a UUID to the base key."""
+    import uuid
     return f"{base_key}_{uuid.uuid4()}"
 
 def home_page():
@@ -54,15 +57,18 @@ def home_page():
 
     if uploaded_file_K1 is not None:
         try:
-            # Read the Excel file to get the sheet names
-            sheet_names = pd.ExcelFile(uploaded_file_K1).sheet_names
+            # Read the Excel or CSV file
+            if uploaded_file_K1.name.endswith('.xlsx'):
+                sheet_names = pd.ExcelFile(uploaded_file_K1).sheet_names
 
-            # Dropdown to select sheet
-            unique_sheet_selectbox_key = generate_unique_key("sheet_selectbox")
-            selected_sheet = st.selectbox('Select Sheet:', sheet_names, key=unique_sheet_selectbox_key)
+                # Dropdown to select sheet
+                unique_sheet_selectbox_key = generate_unique_key("sheet_selectbox")
+                selected_sheet = st.selectbox('Select Sheet:', sheet_names, key=unique_sheet_selectbox_key)
 
-            # Read the data from the selected sheet
-            df = pd.read_excel(uploaded_file_K1, sheet_name=selected_sheet)
+                # Read the data from the selected sheet
+                df = pd.read_excel(uploaded_file_K1, sheet_name=selected_sheet)
+            else:
+                df = pd.read_csv(uploaded_file_K1)
 
             # Remove any commas from numeric values and convert to integers
             df = df.replace({',': ''}, regex=True)
@@ -79,8 +85,7 @@ def home_page():
             unique_pie_month_selectbox_key = generate_unique_key("pie_month_selectbox")
             selected_month_pie = st.selectbox('Select Month for Pie Chart:', months, key=unique_pie_month_selectbox_key)
             filtered_df_pie = df[['Category', selected_month_pie]].rename(columns={selected_month_pie: 'Cost'})
-            fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost',
-                             title=f'Cost Breakdown for {selected_month_pie}')
+            fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost', title=f'Cost Breakdown for {selected_month_pie}')
             st.plotly_chart(fig_pie)
 
             # Bar Chart
@@ -88,9 +93,7 @@ def home_page():
             unique_bar_month_selectbox_key = generate_unique_key("bar_month_selectbox")
             selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1, key=unique_bar_month_selectbox_key)
             filtered_df_bar = df[['Category', selected_month_bar]].rename(columns={selected_month_bar: 'Cost'})
-            fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost',
-                             title=f'Cost Breakdown for {selected_month_bar}',
-                             labels={'Category': 'Category', 'Cost': 'Cost'})
+            fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost', title=f'Cost Breakdown for {selected_month_bar}', labels={'Category': 'Category', 'Cost': 'Cost'})
             st.plotly_chart(fig_bar)
 
             # Stacked Column Chart
