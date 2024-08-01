@@ -53,7 +53,7 @@ def parse_month_column(data):
     return data
 
 def home_page():
-        st.title('Cost Breakdown Analysis')
+    st.title('Cost Breakdown Analysis')
 
     # File uploader to upload Excel file
     uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"], key="file_uploader_1")
