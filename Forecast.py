@@ -39,10 +39,10 @@ import logging
 import logging
 import uuid
 
-def generate_widget_key(prefix):
-    """Generate a unique key for Streamlit widgets."""
-    import uuid
-    return f"{prefix}_{uuid.uuid4()}"
+
+# Function to generate unique widget keys
+def generate_widget_key(base_key):
+    return f"{base_key}_{st.session_state.get(base_key, 0)}"
 
 def home_page():
     st.title('Cost Breakdown Analysis')
