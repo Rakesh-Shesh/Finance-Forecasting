@@ -36,11 +36,14 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import logging
-# Setup logging
-logging.basicConfig(level=logging.DEBUG)
-def load_data(file, sheet_name):
-    df = pd.read_excel(file, sheet_name=sheet_name)
-    return df
+import logging
+import uuid
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+def generate_unique_key(base_key):
+    """Generate a unique key by appending a UUID to the base key."""
+    return f"{base_key}_{uuid.uuid4()}"
 
 
 def calculate_error(actual, forecast):
@@ -59,62 +62,71 @@ def home_page():
     st.title('Cost Breakdown Analysis')
 
     # File uploader to upload Excel file
-    uploaded_file_K1 = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"], key="home_file_uploader")
+    unique_file_uploader_key = generate_unique_key("file_uploader")
+    uploaded_file_K1 = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"], key=unique_file_uploader_key)
 
     if uploaded_file_K1 is not None:
-        # Read the Excel file to get the sheet names
-        sheet_names = pd.ExcelFile(uploaded_file_K1).sheet_names
+        try:
+            # Read the Excel file to get the sheet names
+            sheet_names = pd.ExcelFile(uploaded_file_K1).sheet_names
 
-        # Dropdown to select sheet
-        selected_sheet = st.selectbox('Select Sheet:', sheet_names, key="sheet_selectbox_1")
+            # Dropdown to select sheet
+            unique_sheet_selectbox_key = generate_unique_key("sheet_selectbox")
+            selected_sheet = st.selectbox('Select Sheet:', sheet_names, key=unique_sheet_selectbox_key)
 
-        # Read the data from the selected sheet
-        df = pd.read_excel(uploaded_file_K1, sheet_name=selected_sheet)
+            # Read the data from the selected sheet
+            df = pd.read_excel(uploaded_file_K1, sheet_name=selected_sheet)
 
-        # Remove any commas from numeric values and convert to integers
-        df = df.replace({',': ''}, regex=True)
-        df.iloc[:, 1:] = df.iloc[:, 1:].apply(pd.to_numeric)
+            # Remove any commas from numeric values and convert to integers
+            df = df.replace({',': ''}, regex=True)
+            df.iloc[:, 1:] = df.iloc[:, 1:].apply(pd.to_numeric)
 
-        # List of months
-        months = df.columns[1:]
+            # List of months
+            months = df.columns[1:]
 
-        # Melt the dataframe for easier plotting
-        df_melted = df.melt(id_vars=['Category'], value_vars=months, var_name='Month', value_name='Cost')
+            # Melt the dataframe for easier plotting
+            df_melted = df.melt(id_vars=['Category'], value_vars=months, var_name='Month', value_name='Cost')
 
-        # Pie Chart
-        st.header('Pie Chart')
-        selected_month_pie = st.selectbox('Select Month for Pie Chart:', months, key="pie_month_selectbox_1")
-        filtered_df_pie = df[['Category', selected_month_pie]].rename(columns={selected_month_pie: 'Cost'})
-        fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost',
-                         title=f'Cost Breakdown for {selected_month_pie}')
-        st.plotly_chart(fig_pie)
+            # Pie Chart
+            st.header('Pie Chart')
+            unique_pie_month_selectbox_key = generate_unique_key("pie_month_selectbox")
+            selected_month_pie = st.selectbox('Select Month for Pie Chart:', months, key=unique_pie_month_selectbox_key)
+            filtered_df_pie = df[['Category', selected_month_pie]].rename(columns={selected_month_pie: 'Cost'})
+            fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost',
+                             title=f'Cost Breakdown for {selected_month_pie}')
+            st.plotly_chart(fig_pie)
 
-        # Bar Chart
-        st.header('Bar Chart')
-        selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1, key="bar_month_selectbox_1")
-        filtered_df_bar = df[['Category', selected_month_bar]].rename(columns={selected_month_bar: 'Cost'})
-        fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost',
-                         title=f'Cost Breakdown for {selected_month_bar}',
-                         labels={'Category': 'Category', 'Cost': 'Cost'})
-        st.plotly_chart(fig_bar)
+            # Bar Chart
+            st.header('Bar Chart')
+            unique_bar_month_selectbox_key = generate_unique_key("bar_month_selectbox")
+            selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1, key=unique_bar_month_selectbox_key)
+            filtered_df_bar = df[['Category', selected_month_bar]].rename(columns={selected_month_bar: 'Cost'})
+            fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost',
+                             title=f'Cost Breakdown for {selected_month_bar}',
+                             labels={'Category': 'Category', 'Cost': 'Cost'})
+            st.plotly_chart(fig_bar)
 
-        # Stacked Column Chart
-        st.header('Stacked Column Chart')
-        fig_stacked = go.Figure()
-        for category in df['Category']:
-            fig_stacked.add_trace(go.Bar(
-                x=months,
-                y=df[df['Category'] == category].iloc[0, 1:],
-                name=category
-            ))
+            # Stacked Column Chart
+            st.header('Stacked Column Chart')
+            fig_stacked = go.Figure()
+            for category in df['Category']:
+                fig_stacked.add_trace(go.Bar(
+                    x=months,
+                    y=df[df['Category'] == category].iloc[0, 1:],
+                    name=category
+                ))
 
-        fig_stacked.update_layout(
-            barmode='stack',
-            title='Monthly Cost Breakdown',
-            xaxis_title='Month',
-            yaxis_title='Cost'
-        )
-        st.plotly_chart(fig_stacked)
+            fig_stacked.update_layout(
+                barmode='stack',
+                title='Monthly Cost Breakdown',
+                xaxis_title='Month',
+                yaxis_title='Cost'
+            )
+            st.plotly_chart(fig_stacked)
+
+        except Exception as e:
+            logging.error(f"An error occurred: {e}")
+            st.error("An error occurred while processing the file. Please check the logs for more details.")
 
 if __name__ == '__main__':
     home_page()
