@@ -53,7 +53,7 @@ def parse_month_column(data):
     return data
 
 def home_page():
-    st.title('Cost Breakdown Analysis')
+        st.title('Cost Breakdown Analysis')
 
     # File uploader to upload Excel file
     uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"], key="file_uploader_1")
@@ -63,7 +63,7 @@ def home_page():
         sheet_names = pd.ExcelFile(uploaded_file).sheet_names
 
         # Dropdown to select sheet
-        selected_sheet = st.selectbox('Select Sheet:', sheet_names, key="sheet_selectbox_1")
+        selected_sheet = st.selectbox('Select Sheet:', sheet_names, key="sheet_selectbox_2")
 
         # Read the data from the selected sheet
         df = pd.read_excel(uploaded_file, sheet_name=selected_sheet)
@@ -80,7 +80,7 @@ def home_page():
 
         # Pie Chart
         st.header('Pie Chart')
-        selected_month_pie = st.selectbox('Select Month for Pie Chart:', months, key="pie_month_selectbox_1")
+        selected_month_pie = st.selectbox('Select Month for Pie Chart:', months, key="pie_month_selectbox_3")
         filtered_df_pie = df[['Category', selected_month_pie]].rename(columns={selected_month_pie: 'Cost'})
         fig_pie = px.pie(filtered_df_pie, names='Category', values='Cost',
                          title=f'Cost Breakdown for {selected_month_pie}')
@@ -88,7 +88,7 @@ def home_page():
 
         # Bar Chart
         st.header('Bar Chart')
-        selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1, key="bar_month_selectbox_1")
+        selected_month_bar = st.selectbox('Select Month for Bar Chart:', months, index=1, key="bar_month_selectbox_4")
         filtered_df_bar = df[['Category', selected_month_bar]].rename(columns={selected_month_bar: 'Cost'})
         fig_bar = px.bar(filtered_df_bar, x='Category', y='Cost',
                          title=f'Cost Breakdown for {selected_month_bar}',
