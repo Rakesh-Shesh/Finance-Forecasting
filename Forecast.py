@@ -131,15 +131,6 @@ def home_page():
 if __name__ == '__main__':
     home_page()
 
-def dynamic_widgets():
-    for i in range(10):
-        key = f"text_input_{i}"
-        logging.debug(f"Creating text input with key '{key}'")
-        st.text_input(f"Enter value {i}", key=key)
-
-if __name__ == "__main__":
-    home_page()
-    dynamic_widgets()
 def descriptive_statistics_page():
     # Function to preprocess the data
     def preprocess_data(df):
